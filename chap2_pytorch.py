@@ -325,5 +325,39 @@ for _ in range(50):
 #%% ### prediction 
 val = [[8,9], [10,11], [1.5,2.5]]
 
+model(torch.tensor(val).float().to(device))
 
 
+#%% saving a model #########
+
+model.state_dict()
+#%%
+torch.save(model.to('cpu').state_dict(), 'mymodel.pth')
+
+#%% ######## loading model ########
+# create an empty model as earlier
+model = nn.Sequential(
+    nn.Linear(2, 8),
+    nn.ReLU(),
+    nn.Linear(8, 1)
+).to(device)
+
+# load model from disk and unserialize to create an orderedDict
+state_dict = torch.load('mymodel.pth')
+
+# load state_dict into model, register to device, make a prediction
+model.load_state_dict(state_dict)
+
+#%%
+model.to(device)
+
+#%%
+model(torch.tensor(val).float().to(device))
+
+#%%
+
+
+
+
+
+# %%
