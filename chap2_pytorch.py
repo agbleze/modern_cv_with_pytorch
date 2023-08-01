@@ -80,7 +80,8 @@ opt = SGD(mynet.parameters(), lr=0.001)
 
 loss_history = []
 
-for i in range(50):   
+for i in range(50): 
+    opt.zero_grad()  
     loss_value = loss_func(mynet(X), Y) # compute loss
     loss_value.backward() # perform backward propagation
     opt.step() # update weight according to gradient comuted
@@ -162,7 +163,7 @@ class MyNeuralNet(nn.Module):
 mynet = MyNeuralNet()
 loss_func = nn.MSELoss()
 
-opt = SGD(lr=0.001)
+opt = SGD(mynet.parameters(), lr=0.001)
 
 #%% 8. loop through batches of data and minimize loss
 import time
@@ -189,9 +190,140 @@ val_x = [[10, 11]]
 # 2. convert data point to tensor and register on device
 val_x = torch.tensor(val_x).float().to(device)
 
-# 3. pass tensor object through traine NN to obtain prediction
+# 3. pass tensor object through traine NN to obtain prediction´
 mynet(val_x)
 
+
+
+#%% ############## Implementing a custom loss function ################
+
+# get dataset
+
+x = [[1,2], [3,4], [5,6], [7,8]]
+y = [[3], [7], [11], [15]]
+
+
+#%% create dataloader
+from torch.utils.data import DataLoader, Dataset
+
+# creat tensor of data, register on device
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+X = torch.tensor(x).float().to(device)
+Y = torch.tensor(y).float().to(device)
+
+#%% create dataloader class
+
+class MyDataset(Dataset):
+    def __init__(self, x, y):
+        self.x = torch.tensor(x).float().to(device)
+        self.y = torch.tensor(y).float().to(device)
+        
+    def __len__(self):
+        return len(self.x)
+    
+    def __getitem__(self, ix):
+        return self.x[ix], self.y[ix]
+
+
+#%% ## define NN model class ##
+class MyNeuralNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.input_to_hidden_layer = nn.Linear(2, 8)
+        self.hidden_layer_activation = nn.ReLU()
+        self.hidden_to_output_layer = nn.Linear(8, 1)
+        
+    def forward(self, x):
+        x = self.input_to_hidden_layer(x)
+        x = self.hidden_layer_activation(x)
+        x = self.hidden_to_output_layer(x)
+        return x
+    
+    
+#%% # create custom loss function - MSE
+def my_mean_squared_error(_Y, Y):
+    sq_err = (_Y - Y)**2
+    mean_sq_err = sq_err.mean()
+    return mean_sq_err
+
+
+#%% initialize data class
+ds = MyDataset(x = x, y = y)
+
+dl = DataLoader(ds, batch_size=2, shuffle=True)
+
+# initialize NN
+torch.manual_seed(2023)
+mynet = MyNeuralNet().to(device)
+## initialize optimizer
+from torch.optim import SGD
+
+opt = SGD(params=mynet.parameters(), lr=0.001)
+
+#%% train the network for 50 epoch, back propagation
+
+loss_history = []
+import time
+
+start = time.time()
+
+for _ in range(50):
+    for data in dl:
+        x, y = data
+        opt.zero_grad()
+        loss_value = my_mean_squared_error(mynet(x), y)
+        loss_value.backward()
+    loss_history.append(loss_value)
+    end = time.time()
+    print(end-start)
+  
+  
+    
+    
+#%%  ##### Fetching the values of intermediate layers #####
+## 1. drectly calling layers
+input_to_hidden = mynet.input_to_hidden_layer(X)
+hidden_activation = mynet.hidden_layer_activation(input_to_hidden)
+
+hidden_activation
+
+
+#%% ######### Using sequential method to build a neural network  #########
+import numpy as np
+from torchsummary import summary 
+
+### define model architecture using Sequential method #########
+model = nn.Sequential(
+    nn.Linear(2, 8), 
+    nn.ReLU(), 
+    nn.Linear(8, 1)
+).to(device)
+
+#%%# print summary of model
+
+summary(model, torch.zeros(1,2))
+
+#%% train model
+loss_func = nn.MSELoss()    
+opt = SGD(model.parameters(), lr=0.001)
+
+loss_history = []
+
+start = time.time()
+
+for _ in range(50):
+    for ix, iy in dl:
+        opt.zero_grad()
+        loss_value = loss_func(model(ix), iy)
+        loss_value.backward()
+        opt.step()
+    loss_history.append(loss_value)
+    end = time.time()
+    print(end-start)
+
+#%% ### prediction 
+val = [[8,9], [10,11], [1.5,2.5]]
 
 
 
