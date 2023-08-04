@@ -228,6 +228,27 @@ val_images = val_fmnist.data
 val_targets = val_fmnist.targets
 
 
+#%% define accuracy func
+
+def accuracy(x, y, model):
+    model.eval()
+    with torch.no_grad():
+        prediction = model(x)
+        maxvalue, argmaxes = prediction.max(-1)
+        is_correct = argmaxes == y
+        return is_correct.cpu().numpy().tolist()
+    
+    
+#%% define function to get train and val data
+def get_data():
+    train = FMINISTDataset(tr_images, tr_targets)
+    trn_dl = DataLoader(train, batch_size=32, shuffle=True)
+    
+    val_data = FMINISTDataset(val_images, val_targets)
+    val_dl = DataLoader(val_data, batch_size=len(val_data))
+    return trn_dl, val_dl
+
+
 
 
 
