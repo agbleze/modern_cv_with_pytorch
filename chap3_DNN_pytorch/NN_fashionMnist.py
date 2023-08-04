@@ -245,8 +245,22 @@ def get_data():
     trn_dl = DataLoader(train, batch_size=32, shuffle=True)
     
     val_data = FMINISTDataset(val_images, val_targets)
-    val_dl = DataLoader(val_data, batch_size=len(val_images))
+    val_dl = DataLoader(val_data, batch_size=len(val_images), shuffle=False)
     return trn_dl, val_dl
+
+
+#%% define model
+
+def get_model():
+    model = nn.Sequential(
+        nn.Linear(28*28, 1000),
+        nn.ReLU(),
+        nn.Linear(1000, 10)
+    ).to(device)
+    
+    loss_fn = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
+    return model, loss_fn, optimizer
 
 
 
@@ -287,7 +301,7 @@ for epoch in range(5):
     for ix, batch in enumerate(iter(val_dl)):
         x, y = batch
         val_is_correct = accuracy(x, y, model)
-        validation_loss = val_loss(x,y,model)
+        validation_loss = val_loss(x,y,model, loss_fn)
         val_epoch_accuracy = np.mean(val_is_correct)      
         
     train_losses.append(train_epoch_loss)
@@ -313,5 +327,76 @@ plt.grid('off')
 plt.show()
 
 
+#%%
+plt.subplot(212)
+plt.plot(epochs, train_accuracies, 'bo', label='Training accuracy')  
+plt.plot(epochs, val_accuracies, 'r', label='validation accuracy')
+plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
+plt.title('Training and validation accuracy when batch size is 32')      
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.gca().set_yticklabels(['{:.0f}%'.format(x*100) for x in plt.gca().get_yticks()])
+plt.legend()
+plt.grid('off')
+plt.show()
 
-# %%
+
+
+
+# %% ############# vary batch size = 10000  #########
+## define get data
+
+def get_data():
+    train = FMNISTDataset(tr_images, tr_targets)
+    tr_dl = DataLoader(train, batch_size=10000, shuffle=True)
+    val = FMNISTDataset(val_images, val_targets)
+    val_dl = DataLoader(val, batch_size=len(val_images), shuffle=False)
+    return tr_dl, val_dl
+
+#%%
+
+tr_dl, val_dl = get_data()
+model, loss_fn, optimizer = get_model()
+
+
+#%%
+
+train_losses, val_losses = [], []
+train_accuracies, val_accuracies = [], []
+
+#%%
+for epoch in range(5):
+    print(epoch)
+    train_epoch_losses, train_epoch_accuracies = [], []
+    for ix, batch in enumerate(iter(tr_dl)):
+        x, y = batch
+
+        batch_loss = train_batch(x, y, model, loss_fn, optimizer)
+        train_epoch_losses.append(batch_loss)
+        
+        is_correct = accuracy(x, y, model)
+        train_epoch_accuracies.extend(is_correct)
+        
+    train_epoch_loss = np.array(train_epoch_losses).mean()
+    train_losses.append(train_epoch_loss)
+    
+    train_epoch_accuracy = np.mean(train_epoch_accuracies)
+    train_accuracies.append(train_epoch_accuracy)
+    
+    # cal val losses and accuracy
+    for ix, batch in enumerate(iter(val_dl)):
+        x, y = batch
+        validation_loss = val_loss(x, y, model, loss_fn)
+        validation_accuracies = accuracy(x, y, model)
+    val_losses.append(validation_loss)
+    val_accuracies.append(np.mean(validation_accuracies))
+    
+    
+    
+#%%
+
+
+    
+    
+    
+
