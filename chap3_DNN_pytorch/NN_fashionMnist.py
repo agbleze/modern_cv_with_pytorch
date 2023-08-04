@@ -348,7 +348,7 @@ plt.show()
 
 def get_data():
     train = FMNISTDataset(tr_images, tr_targets)
-    tr_dl = DataLoader(train, batch_size=10000, shuffle=True)
+    tr_dl = DataLoader(train, batch_size=10_000, shuffle=True)
     val = FMNISTDataset(val_images, val_targets)
     val_dl = DataLoader(val, batch_size=len(val_images), shuffle=False)
     return tr_dl, val_dl
@@ -389,14 +389,38 @@ for epoch in range(5):
         validation_loss = val_loss(x, y, model, loss_fn)
         validation_accuracies = accuracy(x, y, model)
     val_losses.append(validation_loss)
-    val_accuracies.append(np.mean(validation_accuracies))
+    val_accuracies.append(np.mean(validation_accuracies))   
     
-    
+#%% visualize the result
+epochs = np.arange(5)+1
+
+plt.subplot(212)
+plt.plot(epochs, train_losses, 'bo', label='Training loss')
+plt.plot(epochs, val_losses, 'r', label='validation loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
+plt.title('Training and validation loss for batch size = 10_000')
+plt.grid('off')
+plt.legend()
+plt.show()
     
 #%%
+plt.subplot(211)
+plt.plot(epochs, train_accuracies, 'bo', label="trainning accuracy")
+plt.plot(epochs, val_accuracies, 'r', label='validation accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
+plt.title('Training and validation accuracy for batch size = 10_000')
+plt.grid('off')
+plt.gca().set_yticklabels(['{:.0f}%'.format(x*100) for x in plt.gca().get_yticks()])
+plt.legend()
+plt.show()
+#%%
 
+train_losses
 
-    
-    
-    
-
+# %%
+epochs
+# %%
