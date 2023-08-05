@@ -203,17 +203,27 @@ for epoch in range(10):
 epochs = np.arange(10)+1
 plt.subplot(111)
 plt.plot(epochs, train_loss, 'bo', label='Training loss')
-plt.plot(epochs, val_loss, 'r', label='validation loss')
+plt.plot(epochs, valid_loss, 'r', label='validation loss')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.title('Training & validation loss with Adam optimizer - batch size = 32')
 plt.grid('off')
 plt.legend()
-plt.gca().xaxis.set_major_tick_location(mticker.MultipleLocator(1))
+plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
 plt.show()
 
-
-
+#%%
+plt.subplot(121)
+plt.plot(epochs, train_accuracy, 'bo', label='Training accuracy')
+plt.plot(epochs, valid_accuracy, 'r', label='Validation accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.title('Training & validation Accuracy with Adam optimizer - batch size = 32')
+plt.grid('off')
+plt.legend()
+plt.gca().set_yticklabels(['{:.0f}%'.format(x*100) for x in plt.gca().get_yticks()])
+plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
+plt.show()
 
 
         
