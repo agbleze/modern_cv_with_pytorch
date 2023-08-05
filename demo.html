@@ -2,22 +2,98 @@
 <html>   
     <head>
         <title>My biography</title>
+
+        <style>
+            div {color: blueviolet}
+            table {border: 1px solid red}
+            th {border: 1px solid greenyellow;
+                background-color: aqua;
+                font-size: 35px}
+            td {border: 1px solid yellow; 
+                color: olivedrab; 
+                background-color: salmon
+            }
+
+            span {color: red; background-color: orchid}
+
+            #arrival {color: green}
+
+            .change_color {color: yellow}
+
+            button {color: blue; border-radius: 10%;
+                    border-color: chartreuse;}
+
+            
+            
+        </style>
+        <!-- p {color: green} -->
+
+        <!-- body {
+                background-image: url('laughing_monkey.jpeg');
+                max-height: 50%;
+
+            } -->
     </head>
+
     <body>
-        <h1>About me</h1>
-        <p>
+        <h1>
+            <a href="https://github.com/agbleze" target="_blank">
+                About me
+             </a>
+        </h1>
+        <nav>
+            <a href="https://www.isprs.org/default.aspx" target="_blank">Home</a>
+            <a href="https://www.tum.de/" target="_blank">Contact</a>
+            <a href="https://www.pf.bgu.tum.de/isprs/pia19/pia19_sub.html"
+                target="_blank">
+                Service
+            </a>
+        </nav>
+
+
+        <p class='change_color' style="background-image: url('Web_Photo_Editor.jpeg');"> 
             My name is Kojo besia. I am a teacher.
            <br>I live in Poland and I speak Polish.
         </p>
 
-        <h2>My first day in Poland</h2>
-        <p>When I arrived at the airport, I received 
-            a very intensed police inspection
-        </p>
+        
+        <div>
+            <h2>My first day in Poland</h2>
+            <p id="arrival">When I arrived at the airport, I received 
+                 a very intensed police inspection
+            </p>
+            <small> The day is bright</small>
+        </div>
         <hr>
 
-        <p>Afterwards, I had a negative impression about 
-            the country. The police found the following 
+        <table>
+            <tr>
+                <th>Items</th>
+                <th>Expenditure</th>
+                <th>Quantity</th>
+            </tr>
+            <tr>
+                <td>Kartoffel</td>
+                <td>20</td>
+                <td>2</td>
+            </tr>
+            <tr>
+                <td>rice</td>
+                <td>3</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td>tomato</td>
+                <td>1</td>
+                <td>0.7</td>
+            </tr>
+        </table>
+
+
+
+
+        <p class="change_color">Afterwards, I had a negative impression about 
+            the country. The <span>police </span> found the following 
             items in my bag:
         </p>
 
@@ -29,7 +105,7 @@
         </ul>
 
         <!-- ordered list-->
-        <ol>
+        <ol class="change_color">
             <li>First busstop</li>
             <li>Second bus stop</li>
             <li>Third bus stop</li>
@@ -40,6 +116,33 @@
         <!-- I continue later form this line -->
 
         <small> By the way, I love the nightlive </small>
+
+        <img src="laughing_monkey.jpeg" alt="monkey laughing" 
+            style="width:30%; height:30%; float:right">
+
+        <div>
+            <p>i had a bad day shopping</p>
+        </div>
+
+        <button type="submit">
+            <b>submit the form</b>
+        </button>
+
+
+        <!-- table
+            html id, class
+            nav
+            div
+            span
+            button
+            internal css
+        -->
+
+
+        
+
+        <!--<img src="laughing_monkey.jpeg" alt="My pic" width="50%" height="50%"
+style="float:right">-->
 
     </body>
 </html>
