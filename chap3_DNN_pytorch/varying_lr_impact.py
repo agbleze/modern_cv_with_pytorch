@@ -26,10 +26,13 @@ val_targets = fmnist_val.targets
 #%% define class for loading datasets
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 class FMNISTDataset(Dataset):
-    def __init__(self, x, y, scaled: bool):
+    def __init__(self, x, y, scaled:bool = True):
         if scaled:
-            self.x = x.float() / 255 
-        self.x = x.float()
+            x = x.float() / 255 
+            self.x = x.view(-1, 28*28)
+            
+        x = x.float()
+        self.x = x.view(-1, 28*28)
         self.y = y
         
     def __len__(self):
@@ -43,7 +46,7 @@ class FMNISTDataset(Dataset):
 def get_batch_data(train_img = tr_images,
                    train_target = tr_targets,
                    val_images = val_images,
-                   val_targets = val_images,
+                   val_targets = val_targets,
                    batch_size: int = 32):
     train_data = FMNISTDataset(train_img, train_target)
     train_dl = DataLoader(train_data, batch_size=batch_size,
@@ -58,11 +61,11 @@ def get_batch_data(train_img = tr_images,
     
     return train_dl, val_dl
 
-
+# [str|callable]
 #%% define model, loss function, optimizer
-def get_model_specified(loss_func_type: [str|callable]='crossentropy', 
+def get_model_specified(loss_func_type:str ='crossentropy', 
                         lr=1e-2, 
-                        optim_type: [str|callable]='adam'
+                        optim_type:str ='adam'
                         ):
     """Returns model, loss function, and optimizer"""
     model = nn.Sequential(
@@ -109,19 +112,23 @@ def train_batch(x, y, model, loss_fn, optimizer):
 @torch.no_grad()
 def accuracy(x, y, model):
     prediction = model(x)
-    correct_pred_or_not = prediction.max(-1)
-    maxvalue, argmaxes = correct_pred_or_not == y
-    return argmaxes.cpu().numpy().tolist()
+    maxvalue, argmaxes = prediction.max(-1)
+    correct_pred_or_not = argmaxes == y
+    return correct_pred_or_not.cpu().numpy().tolist()
 
 
 #%% trigger training process func
 
-def trigger_training_process(epochs: int = 10):
+tr_dl, val_dl = get_batch_data()
+model, loss_fn, optimizer = get_model_specified()
+def trigger_training_process(epochs:int = 10,
+                             tr_dl=tr_dl, val_dl=val_dl,
+                             model=model, loss_fn=loss_fn,
+                             optimizer=optimizer
+                             ):
     """Returns train loss, train accuracy, validation loss,
         validation_accuracy
     """
-    tr_dl, val_dl = get_batch_data()
-    model, loss_fn, optimizer = get_model_specified()
     train_loss, train_accuracy = [], []
     valid_loss, valid_accuracy = [], []
     
@@ -158,16 +165,38 @@ def trigger_training_process(epochs: int = 10):
             is_correct_pred = accuracy(x, y, model)
         valid_loss.append(val_losses)
         valid_accuracy.append(np.mean(np.array(is_correct_pred)))
-    return train_loss, train_accuracy. valid_loss, valid_accuracy
+    return {'train_loss':train_loss, 
+            'train_accuracy':train_accuracy, 
+            'valid_loss': valid_loss, 
+            'valid_accuracy':valid_accuracy
+         }
         
+#%%
+training_res= trigger_training_process()   
         
-    
-        
-       
-        
+#%%
+
+train_loss = training_res['train_loss']  
+train_acc = training_res['train_accuracy']  
+valid_loss = training_res['valid_loss']   
+valid_acc = training_res['valid_accuracy']
+
+#%%
+epochs = np.arange(10)+1
+
+plt.subplot(111)
+plt.plot(epochs, train_loss, 'bo', label='Training loss')
+plt.plot(epochs, valid_loss, 'r', label='Validation loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.title('Training and validation loss lr - 0.01')
+plt.legend()
+plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
+plt.show()
+
+
+#%%
 
 
 
-
-
-
+# %%
