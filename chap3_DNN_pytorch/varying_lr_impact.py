@@ -600,14 +600,87 @@ def get_model_with_2hidden_layer():
 
 
 
+#%%
+
+no_hlyr_model, loss_fn, optimizer = get_model_with_no_hidden_layer()
+
+no_hlyr_train_res = trigger_training_process(epochs=10, tr_dl=tr_dl, 
+                                            val_dl=val_dl,
+                                            model=no_hlyr_model, 
+                                            loss_fn=loss_fn, 
+                                            optimizer=optimizer
+                                            )
+
+#%%
+no_hlyr_train_loss = no_hlyr_train_res['train_loss']  
+no_hlyr_train_acc = no_hlyr_train_res['train_accuracy']  
+no_hlyr_valid_loss = no_hlyr_train_res['valid_loss']   
+no_hlyr_valid_acc = no_hlyr_train_res['valid_accuracy']
+
+plot_loss(train_loss=no_hlyr_train_loss, 
+          valid_loss=no_hlyr_valid_loss, num_epochs=10,
+          title='training and validation loss with no hidden layer'
+          )
+
+plot_accuracy(train_accuracy=no_hlyr_train_acc, 
+              valid_accuracy=no_hlyr_valid_acc,num_epochs=10,
+              title='Training and validation accuracy with no hidden layer'
+              )
 
 
+#%%  ########  1 hidden layers ########
+hlyr1_model, loss_fn, optimizer = get_model_with_1hidden_layer()
+
+hlyr1_train_res = trigger_training_process(epochs=10, tr_dl=tr_dl, 
+                                            val_dl=val_dl,
+                                            model=hlyr1_model, 
+                                            loss_fn=loss_fn, 
+                                            optimizer=optimizer
+                                            )
+
+#%%
+hlyr1_train_loss = hlyr1_train_res['train_loss']  
+hlyr1_train_acc = hlyr1_train_res['train_accuracy']  
+hlyr1_valid_loss = hlyr1_train_res['valid_loss']   
+hlyr1_valid_acc = hlyr1_train_res['valid_accuracy']
+
+plot_loss(train_loss=hlyr1_train_loss, 
+          valid_loss=hlyr1_valid_loss, num_epochs=10,
+          title='training and validation loss with 1 hidden layer'
+          )
+
+plot_accuracy(train_accuracy=hlyr1_train_acc, 
+              valid_accuracy=hlyr1_valid_acc,num_epochs=10,
+              title='Training and validation accuracy with 1 hidden layer'
+              )
 
 
+#%%  ####### 2 hidden layers #######
+hlyr2_model, loss_fn, optimizer = get_model_with_2hidden_layer()
+
+hlyr2_train_res = trigger_training_process(epochs=10, tr_dl=tr_dl, 
+                                            val_dl=val_dl,
+                                            model=hlyr2_model, 
+                                            loss_fn=loss_fn, 
+                                            optimizer=optimizer
+                                            )
+
+#%%
+hlyr2_train_loss = hlyr2_train_res['train_loss']  
+hlyr2_train_acc = hlyr2_train_res['train_accuracy']  
+hlyr2_valid_loss = hlyr2_train_res['valid_loss']   
+hlyr2_valid_acc = hlyr2_train_res['valid_accuracy']
+
+plot_loss(train_loss=hlyr2_train_loss, 
+          valid_loss=hlyr2_valid_loss, num_epochs=10,
+          title='training and validation loss with 2 hidden layer'
+          )
+
+plot_accuracy(train_accuracy=hlyr2_train_acc, 
+              valid_accuracy=hlyr2_valid_acc,num_epochs=10,
+              title='Training and validation accuracy with 2 hidden layer'
+              )
 
 
-
-
-
-
+#%%   #######     ###########
 
