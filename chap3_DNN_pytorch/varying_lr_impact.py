@@ -196,6 +196,34 @@ plt.show()
 
 
 #%%
+def plot_loss(train_loss, valid_loss, num_epochs=10, 
+              title='Training and validation loss lr - 0.01'
+              ):
+    epochs = np.arange(num_epochs)+1
+    plt.subplot(111)
+    plt.plot(epochs, train_loss, 'bo', label='Training loss')
+    plt.plot(epochs, valid_loss, 'r', label='Validation loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title(title)
+    plt.legend()
+    plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
+    plt.show()
+ 
+ #%% 
+def plot_accuracy(train_accuracy, valid_accuracy, num_epochs, title):
+    epochs = np.arange(num_epochs)+1
+    plt.subplot(111)
+    plt.plot(epochs, train_accuracy, 'bo', label='Training Accuracy')
+    plt.plot(epochs, valid_accuracy, 'r', label='Validation Accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title(title)
+    plt.legend()
+    plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
+    plt.gca().set_yticklabels(['{:.0f}%'.format(x*100) for x in plt.gca().get_yticks])
+    plt.show()   
+#%%
 
 
 
