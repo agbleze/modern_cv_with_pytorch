@@ -512,7 +512,7 @@ def trigger_training_with_lr_annealing(epochs, tr_dl, val_dl, model, loss_fn,
         for ix, batch in enumerate(iter(val_dl)):
             x, y = batch
             val_is_correct = accuracy(x, y, model)
-            validation_loss = val_loss(x, y, model)
+            validation_loss = val_loss(x, y, model, loss_fn)
             scheduler.step(validation_loss)
         val_epoch_accuracy = np.mean(val_is_correct)
         
@@ -540,6 +540,71 @@ lr_anneal_train_res = trigger_training_with_lr_annealing(epochs=100, tr_dl=tr_dl
                                                          optimizer=optimizer
                                                          )
 # %%
+lr_anneal_train_loss = lr_anneal_train_res['train_loss']  
+lr_anneal_train_acc = lr_anneal_train_res['train_accuracy']  
+lr_anneal_valid_loss = lr_anneal_train_res['valid_loss']   
+lr_anneal_valid_acc = lr_anneal_train_res['valid_accuracy']
+
+plot_loss(train_loss=lr_anneal_train_loss, 
+          valid_loss=lr_anneal_valid_loss, num_epochs=100,
+          title='training and validation loss with learning rate annealing'
+          )
+
+plot_accuracy(train_accuracy=lr_anneal_train_acc, 
+              valid_accuracy=lr_anneal_valid_acc,num_epochs=100,
+              title='Training and validation accuracy with learning rate annealing'
+              )
+
+
+
+
+
+
+
+
+
+
+#%%  ######### impact of building a deeper model  ######
+
+def get_model_with_no_hidden_layer():
+    model = nn.Sequential(
+        nn.Linear(28*28, 10)
+    ).to(device)
+    loss_fn = nn.CrossEntropyLoss()
+    optimizer = Adam(model.parameters(), lr=1e-3)
+    return model, loss_fn, optimizer
+
+
+def get_model_with_1hidden_layer():
+    model = nn.Sequential(
+        nn.Linear(28*28, 1000),
+        nn.ReLU(),
+        nn.Linear(1000, 10)
+    ).to(device)
+    loss_fn = nn.CrossEntropyLoss()
+    optimizer = Adam(model.parameters(), lr=1e-3)
+    return model, loss_fn, optimizer
+
+
+def get_model_with_2hidden_layer():
+    model = nn.Sequential(
+        nn.Linear(28*28, 1000),
+        nn.ReLU(),
+        nn.Linear(1000, 1000),
+        nn.ReLU(),
+        nn.Linear(1000, 10)
+    ).to(device)
+    loss_fn = nn.CrossEntropyLoss()
+    optimizer = Adam(model.parameters(), lr=1e-3)
+    return model, loss_fn, optimizer
+
+
+
+
+
+
+
+
 
 
 
