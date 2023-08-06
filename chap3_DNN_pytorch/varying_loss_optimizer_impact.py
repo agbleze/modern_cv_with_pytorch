@@ -113,6 +113,8 @@ for epoch in range(10):
         training_epoch_loss.append(batch_loss)
         
         # cal accuracy for training data
+    for ix, batch in enumerate(iter(tr_dl)):
+        x, y = batch
         is_correct = accuracy(x, y, model)
         training_epoch_accuracy.extend(is_correct)
     
@@ -186,6 +188,9 @@ for epoch in range(10):
         x, y = batch
         batch_loss = train_batch(x, y, model, loss_fn, optimizer)
         train_epoch_loss.append(batch_loss)
+        
+    for ix, batch in enumerate(iter(tr_dl)):
+        x, y = batch
         is_correct = accuracy(x, y, model)
         train_epoch_accuracy.extend(is_correct)
     train_loss.append(np.mean(np.array(train_epoch_loss)))
