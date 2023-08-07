@@ -208,7 +208,7 @@ plot_accuracy(train_accuracy=smvl_train_acc, valid_accuracy=smvl_val_acc, num_ep
               )
             
 
-#%%  #####  batch normalization  #####
+#%%  ##########  batch normalization  #########
 
 def get_batch_normalized_model():
     class neuralnet(nn.Module):
@@ -230,6 +230,65 @@ def get_batch_normalized_model():
     loss_fn = CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
     return model, loss_fn, optimizer
+
+#%%
+
+batch_norm_model, loss_fn, optimizer = get_batch_normalized_model()
+
+#%%
+
+batch_train_res = trigger_train_process(tr_dl=tr_dl, val_dl=val_dl, 
+                                        model=batch_norm_model, 
+                                        loss_fn=loss_fn, 
+                                        optimizer=optimizer
+                                        )
+
+
+#%%
+
+batch_train_res.keys()
+#%%
+batch_train_loss = batch_train_res['train_losses']
+batch_val_loss = batch_train_res['valid_loss']
+batch_train_acc = batch_train_res['train_accuracy']
+batch_val_acc = batch_train_res['valid_accuracy']
+
+#%%   #######      ########
+plot_loss(train_loss=batch_train_loss, valid_loss=batch_val_loss, 
+          num_epochs=10,
+          title='Training and validation loss with very small input values and batch normalization'
+          )
+
+plot_accuracy(train_accuracy=batch_train_acc, valid_accuracy=batch_val_acc,
+              num_epochs=10,
+              title='Training and validation accuracy with very small input values batch normilization'
+              )
+
+
+
+# %% ####### Reducing overfitting with Dropout and regularization ######
+### Batch normalization  ###
+def get_dropout_model():
+    model = nn.Sequential(
+        nn.Dropout(0.25),
+        nn.Linear(28*28, 1000),
+        nn.ReLU(),
+        nn.Dropout(0.25),
+        nn.Linear(1000, 10)
+    ).to(device)
+    loss_fn = CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=1e-3)
+    return model, loss_fn, optimizer
+
+
+#%%
+dropout_model, loss_fn, optimizer = get_dropout_model()
+
+#%%
+
+# dropout_train_res = trigger_train_process(tr_dl=tr_dl, val_dl=val_dl, model=dropout_model,
+#                                             loss_fn=loss_fn, optimizer=optimizer
+#                                             )
 
 
 
