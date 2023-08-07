@@ -8,6 +8,12 @@ from torch import optim
 import torch.nn as nn
 import matplotlib.pyplot as plt
 from torch.nn import CrossEntropyLoss
+import matplotlib.ticker as mticker
+
+
+#%%  #####  Very small input values with batch normalization  #####
+
+
 
 
 #%%  #### get data #####
@@ -105,6 +111,7 @@ def trigger_train_process(tr_dl, val_dl, model, loss_fn, optimizer, epochs=10):
     val_losses, val_accuracies = [], []
     
     for epoch in range(epochs):
+        print(epoch)
         train_epoch_loss, train_epoch_accuracies = [], []
         #val_epoch_loss, val_epoch_accuracies = [], []
         
@@ -128,21 +135,106 @@ def trigger_train_process(tr_dl, val_dl, model, loss_fn, optimizer, epochs=10):
         train_accuracies.append(train_epoch_accuracy)
         
         val_losses.append(valid_epoch_loss)
-        val_accuracies.append(valid_epoch_accuracies.mean())
+        val_accuracies.append(np.array(valid_epoch_accuracies).mean())
         
     return {'train_losses': train_losses,
             'train_accuracy': train_accuracies,
             'valid_loss': val_losses,
             'valid_accuracy': val_accuracies
             }
+       
+
+#%%  ####   #####
+
+def plot_loss(train_loss, valid_loss, num_epochs=10, 
+              title='Training and validation loss lr - 0.01'
+              ):
+    epochs = np.arange(num_epochs)+1
+    plt.subplot(111)
+    plt.plot(epochs, train_loss, 'bo', label='Training loss')
+    plt.plot(epochs, valid_loss, 'r', label='Validation loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title(title)
+    plt.legend()
+    plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
+    plt.show()
+ 
+#%% 
+def plot_accuracy(train_accuracy, valid_accuracy, num_epochs, title):
+    epochs = np.arange(num_epochs)+1
+    plt.subplot(111)
+    plt.plot(epochs, train_accuracy, 'bo', label='Training Accuracy')
+    plt.plot(epochs, valid_accuracy, 'r', label='Validation Accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.title(title)
+    plt.legend()
+    plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
+    plt.gca().set_yticklabels(['{:.0f}%'.format(x*100) for x in plt.gca().get_yticks()])
+    plt.show()  
+    
+#%%  ######     #######
+
+tr_dl, val_dl = get_data()
+
+model, loss_fn, optimizer = get_model()
+
+#%%
+small_value_train_res = trigger_train_process(tr_dl=tr_dl, val_dl=val_dl, 
+                                                model=model, loss_fn=loss_fn,
+                                                optimizer=optimizer
+                                                )
         
 
-#%%  
+#%%
+small_value_train_res.keys()
+
+#%%  ##### plots  #####
+smvl_train_loss = small_value_train_res['train_losses']
+smvl_val_loss = small_value_train_res['valid_loss']
+smvl_train_acc = small_value_train_res['train_accuracy']
+smvl_val_acc = small_value_train_res['valid_accuracy']
+
+#%%
+
+plot_loss(smvl_train_loss, valid_loss=smvl_val_loss, num_epochs=10,
+          title='Training and validation loss with small input values'
+          )
         
-        
+#%% 
+plot_accuracy(train_accuracy=smvl_train_acc, valid_accuracy=smvl_val_acc, num_epochs=10,
+              title='Training and validation accuracy with small input values'
+              )
             
 
+#%%  #####  batch normalization  #####
+
+def get_batch_normalized_model():
+    class neuralnet(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.input_to_hidden_layer = nn.Linear(28*28, 1000)
+            self.batch_norm = nn.BatchNorm1d(1000)
+            self.hidden_layer_activation = nn.ReLU()
+            self.hidden_to_output_layer = nn.Linear(1000, 10)
+            
+        def forward(self, x):
+            x = self.input_to_hidden_layer(x)
+            x0 = self.batch_norm(x)
+            x1 = self.hidden_layer_activation(x0)
+            x2 = self.hidden_to_output_layer(x1)
+            return x2, x1
+            
+    model = neuralnet().to(device)
+    loss_fn = CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=1e-3)
+    return model, loss_fn, optimizer
 
 
 
 
+
+
+
+# %%
