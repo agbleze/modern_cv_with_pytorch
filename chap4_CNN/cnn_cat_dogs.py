@@ -7,6 +7,7 @@ import torch.nn.functional as F
 from torchvision import transforms, models, datasets
 from torch import optim
 from torch.utils.data import Dataset, DataLoader
+import matplotlib.ticker as mticker
 
 #%%
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -43,13 +44,17 @@ test_data_dir = 'dogs-vs-cats/test'
 
 #%%
 class cats_dogs(Dataset):
-    def __init__(self, folder):
+    def __init__(self, folder, num_images = None):
         cats = glob(folder+'/cats/*.jpg')
         dogs = glob(folder+'/dogs/*jpg')
-        self.fpaths = cats + dogs
+        if num_images is None:
+            self.fpaths = cats + dogs
+        else:
+            self.fpaths = cats[:num_images] + dogs[:num_images]
         
         from random import shuffle, seed
         seed(10)
+        shuffle(self.fpaths)
         self.targets=[fpath.split('/')[-1].startswith('dog')
                       for fpath in self.fpaths
                       ]  ## dog = 1
@@ -111,10 +116,10 @@ summary(model, torch.zeros(1, 3, 224, 224))
 
 
 # %% define get data
-def get_data():
-    train = cats_dogs(train_data_dir)
+def get_data(num_images=None):
+    train = cats_dogs(train_data_dir, num_images=num_images)
     trn_dl = DataLoader(train, batch_size=32, shuffle=True, drop_last=True)
-    val = cats_dogs(test_data_dir)
+    val = cats_dogs(test_data_dir, num_images=num_images)
     val_dl = DataLoader(val, batch_size=32, shuffle=True, drop_last=True)
     return trn_dl, val_dl
 
@@ -150,8 +155,80 @@ def val_loss(x, y, model, loss_fn):
 
 #%% define training process
 
-def trigger_train_process(x, y, model, loss_fn, optimizer,
-                          num_epochs: int = 5):
+def trigger_train_process(train_dataload, val_dataload, 
+                          model, loss_fn, optimizer,
+                          num_epochs: int = 5,
+                          train_batch = train_batch):
     train_losses, train_accuracies = [], []
     val_losses, val_accuracies = [], []
+    for epoch in range(num_epochs):
+        train_epoch_losses, train_epoch_accuracies = [], []
+        val_epoch_accuracies = []
+        
+        for ix, batch in enumerate(iter(train_dataload)):
+            x, y = batch
+            batch_loss = train_batch(x, y, model, 
+                                     loss_fn, optimizer
+                                     )
+            train_epoch_losses.append(batch_loss)
+        train_epoch_loss = np.array(train_epoch_losses).mean()
+        
+        for ix, batch in enumerate(iter(train_dataload)):
+            x, y = batch
+            is_correct = accuracy(x, y, model)
+            train_epoch_accuracies.extend(is_correct)
+        train_epoch_accuracy = np.mean(train_epoch_accuracies)
+        
+        for ix, batch in enumerate(iter(val_dataload)):
+            x, y = batch
+            val_is_correct = accuracy(x, y, model)
+            val_epoch_accuracies.extend(val_is_correct)
+            validation_loss = val_loss(x, y, model, loss_fn)
+        val_epoch_accuracy = np.mean(train_epoch_accuracies)
+        
+        train_losses.append(train_epoch_loss)
+        train_accuracies.append(train_epoch_accuracy)
+        val_accuracies.append(val_epoch_accuracy)
+        val_losses.append(validation_loss)
+        
+        
+#%%
+def plot_loss(train_loss, valid_loss, num_epochs=10, 
+              title='Training and validation loss lr - 0.01'
+              ):
+    epochs = np.arange(num_epochs)+1
+    plt.subplot(111)
+    plt.plot(epochs, train_loss, 'bo', label='Training loss')
+    plt.plot(epochs, valid_loss, 'r', label='Validation loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title(title)
+    plt.legend()
+    plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
+    plt.show()
+ 
+#%% 
+def plot_accuracy(train_accuracy, valid_accuracy, num_epochs, title):
+    epochs = np.arange(num_epochs)+1
+    plt.subplot(111)
+    plt.plot(epochs, train_accuracy, 'bo', label='Training Accuracy')
+    plt.plot(epochs, valid_accuracy, 'r', label='Validation Accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.title(title)
+    plt.legend()
+    plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
+    plt.gca().set_yticklabels(['{:.0f}%'.format(x*100) for x in plt.gca().get_yticks()])
+    plt.show()  
+    
+#%%  ######      
+model, loss_fn, optimizer = get_model()
+
+#%%
+train_dataload, val_dataload = get_data()    
+    
+#%%    
+    
+    
+    
     
