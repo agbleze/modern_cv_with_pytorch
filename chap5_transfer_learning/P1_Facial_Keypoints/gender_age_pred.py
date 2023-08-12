@@ -210,9 +210,23 @@ for epoch in range(n_epochs):
     val_gender_accuracies.append(val_gender_acc)
     val_age_maes.append(val_age_mae)
         
-        
 
-    
+#%%
+epochs = np.arange(1, (n_epochs+1))
+fig, ax = plt.subplots(1,2, figsize=(10,5))
+ax = ax.flat
+ax[0].plot(epochs, val_gender_accuracies, 'bo')
+ax[1].plot(epochs, val_age_maes, 'r')
+ax[0].set_xlabel('Epochs')
+ax[1].set_xlabel('Epochs')        
+ax[0].set_ylabel('Accuracy')
+ax[1].set_ylabel('MAE')    
+ax[0].set_title('Validation Gender Accuracy')
+ax[1].set_title('Validation Age Mean-Absolute-Error')
+plt.show()
+
+
+
     
     ## system application and product in data processing
 
