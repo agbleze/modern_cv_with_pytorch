@@ -22,6 +22,7 @@ trn_df = pd.read_csv('fairface-label-train.csv')
 val_df = pd.read_csv('fairface-label-val.csv')
 trn_df.head()
 
+device = 'cuda' if torch.is_available() else 'cpu'
 
 #%% prepare dataset 
 IMAGE_SIZE = 224
@@ -49,10 +50,43 @@ class GenderAgeClass(Dataset):
         im = torch.tensor(im/255).permute(2,0,1)
         im = self.normalize(im)
         return im[None]
-        
+    
+    def collate_fn(self, batch):
+        ims, ages, genders = [], [], []
+        for im, age, gender in batch:
+            im = self.preprocess_image(im)
+            ims.append(im)
+            ages.append(float(int(age))/80)
+            genders.append(float(gender))
+        ages, genders = [torch.tensor(x).to(device).float()
+                         for x in [ages, genders]
+                         ]
+        ims = torch.cat(ims).to(device)
+        return ims, ages, genders
 
 
+#%% 
+trn = GenderAgeClass(trn_df)
+val = GenderAgeClass(val_df)
+train_loader = DataLoader(trn, batch_size=32, shuffle=True,
+                          drop_last=True, 
+                          collate_fn=trn.collate_fn
+                          )
+test_loader = DataLoader(val, batch_size=32, collate_fn=val.collate_fn,)
+a,b,c = next(iter(train_loader))
+print(a.shape, b.shape, c.shape)
 
+#%%
+def get_model():
+    model = models.vgg16(pretrained=True)
+    for param in model.parameters():
+        param.requires_grad = False
+    model.avgpool = nn.Sequential(
+                            nn.Conv2d(512, 512, kernel_size=3),
+                            nn.MaxPool2d(2),
+                            nn.ReLU(),
+                            nn.Flatten()
+                        )
 
 
 
