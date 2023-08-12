@@ -226,8 +226,24 @@ ax[1].set_title('Validation Age Mean-Absolute-Error')
 plt.show()
 
 
+#%%  ##### make prediction of age and gender #####
+# load image
+im = cv2.imread('*.JPG')
+im = trn.preprocess_image(im).to(device)
+gender, age = model(im)
+pred_gender = gender.to('cpu').detach().numpy()
+pred_age = age.to('cpu').detach().numpy()
 
-    
+
+#%% ##### plot the img along with original and predicted values #####
+im = cv2.imread('nameofpic.JPG')
+im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+plt.imshow(im)
+print('predicted gender:' np.where(pred_gender[0][0]<0.5, 'Male', 'Female'),'; Predicted age', int(pred_age[0][0]*80))
+
+
+
+#%%    
     ## system application and product in data processing
 
 
