@@ -239,7 +239,7 @@ pred_age = age.to('cpu').detach().numpy()
 im = cv2.imread('nameofpic.JPG')
 im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
 plt.imshow(im)
-print('predicted gender:' np.where(pred_gender[0][0]<0.5, 'Male', 'Female'),'; Predicted age', int(pred_age[0][0]*80))
+print('predicted gender:' np.where(pred_gender[0][0]<0.5, 'Male', 'Female'), 'Predicted age', int(pred_age[0][0]*80))
 
 
 
