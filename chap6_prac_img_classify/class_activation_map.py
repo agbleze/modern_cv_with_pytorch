@@ -147,3 +147,69 @@ n_epochs = 2
 log = Report(n_epochs)
 
 #%%
+for ex in range(n_epochs):
+    N = len(trn_dl)
+    for bx, data in enumerate(model, data, optimizer, criterion):
+        loss, acc = train_batch(model, data, optimizer, criterion)
+        log.record(ex+(bx+1)/N,trn_loss=loss, trn_acc=acc, end='\r')
+        
+    N = len(val_dl)
+    for bx, data in enumerate(val_dl):
+        loss, acc = validate_batch(model, data, criterion)
+        log.record(ex+(bx+1)/N, val_loss=loss, val_acc=acc, end='\r')
+        
+# fecth conv layer in 5th convBlock in the model
+im2fmap = nn.Sequential(*(list(model.model[:5].children())
+                          +list(model.model[5][:2].children())
+                          )
+                        )
+
+
+#%% define func that take input img and fetches heatmap for activation of img
+def im2gradCAM(x):
+    model.eval()
+    logits = model(x)
+    heatmaps = []
+    activations = im2fmap(x)
+    print(activations.shape)
+    pred = logits.max(-1)[-1]
+    model.zero_grad()
+    # compute gradients with respect to model's most confident logit
+    logits[0,pred].backward(retain_graph=True)
+    # get gradients at the required featuremap location and 
+    # take the avg gradient for every featuremap
+    pooled_grads = model.model[-7][1].weight.grad.data.mean((0,2,3))
+    
+    # multiply each activation map with corresponding gradients avgerage
+    for i in range(activations.shape[1]):
+        activations[:,i,:,:] *= pooled_grads[i]
+        # take mean of all weighted activation maps
+        heatmap = torch.mean(activations, dim=1)[0].cpu().detach()
+    return heatmap, 'Uninfected' if pred.item() else 'Parasitized'
+
+#%% define func to up-sample heatmap of shape that corresponds to 
+# the shape of the image
+SZ = 128
+def upsampleHeatmap(map, img):
+    m,M = map.min(), map.max()
+    map = 255 * ((map-m) / (M-m))
+    map = np.uint8(map)
+    map = np.uint8(map*0.7 + img*0.3)
+    return map
+
+N = 20
+_val_dl = DataLoader(val_ds, batch_size=N, shuffle=True,
+                     collate_fn=val_ds.collate_fn
+                     )
+x,y,z = next(iter(_val_dl))
+
+for i in range(N):
+    image = resize(z[i], SZ)
+    heatmap, pred = im2gradCAM(x[i:i+1])
+    if (pred=='Uninfected'):
+        continue
+    heatmap = upsampleHeatmap(heatmap, image)
+    subplots([image, heatmap], nc=2, figsize=(5,3),
+             suptitle=pred
+             )
+
