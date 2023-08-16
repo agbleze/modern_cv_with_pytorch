@@ -4,6 +4,7 @@ from torch_snippets import *
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 import glob
+from sklearn.model_selection import train_test_split
 
 
 #%%
@@ -49,7 +50,18 @@ class OpenDataset(Dataset):
         target['labels'] = torch.Tensor([label2target[i] for i in labels]).long()
         img = preprocess_image(img)
         return img, target
+    
+    def collate_fn(self, batch):
+        return tuple(zip(*batch))
+    
+    def __len__(self):
+        return len(self.image_infos)
         
+
+#%% create training and validation dataloaders and datasets
+
+
+
 
 
 
