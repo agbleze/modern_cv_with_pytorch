@@ -30,8 +30,8 @@ from torchsummary import summary
 # !unzip cat-and-dog.zip
 
 # %%
-train_data_dir = 'dogs-vs-cats/train'
-test_data_dir = 'dogs-vs-cats/test'
+train_data_dir = 'archive/training_set/training_set'
+test_data_dir = 'archive/test_set/test_set'
 
 #%% move filenames begining with dog to dogs folder
 #  !mv dogs-vs-cats/train/dog* dogs-vs-cats/train/dogs;
@@ -78,6 +78,10 @@ class cats_dogs(Dataset):
 data = cats_dogs(train_data_dir)
 im, label = data[200]
 
+
+#%%
+
+cats_dogs(test_data_dir)
 # %%
 plt.imshow(im.permute(1,2,0))
 print(label)
@@ -162,6 +166,7 @@ def trigger_train_process(train_dataload, val_dataload,
     train_losses, train_accuracies = [], []
     val_losses, val_accuracies = [], []
     for epoch in range(num_epochs):
+        print(epoch)
         train_epoch_losses, train_epoch_accuracies = [], []
         val_epoch_accuracies = []
         
@@ -190,6 +195,12 @@ def trigger_train_process(train_dataload, val_dataload,
         train_accuracies.append(train_epoch_accuracy)
         val_accuracies.append(val_epoch_accuracy)
         val_losses.append(validation_loss)
+        
+    return {'train_loss':train_losses, 
+            'train_accuracy':train_accuracies, 
+            'valid_loss': val_losses, 
+            'valid_accuracy':val_accuracies
+        }
         
         
 #%%
@@ -226,9 +237,23 @@ model, loss_fn, optimizer = get_model()
 
 #%%
 train_dataload, val_dataload = get_data()    
+
+
+#%%
+all_img_train_res = trigger_train_process(train_dataload=train_dataload,
+                                            val_dataload=val_dataload,
+                                            model=model,loss_fn=loss_fn, 
+                                            optimizer=optimizer
+                                            )
+
+
+#%%   #####   ######
+
+
     
 #%%    
+#! kaggle datasets download -d tongpython/cat-and-dog    
     
     
     
-    
+# %%
