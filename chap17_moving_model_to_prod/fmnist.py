@@ -8,5 +8,6 @@ class FMNIST(nn.Module):
              'Coat', 'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot'
              ]
     def __init__(self):
-    self.model = nn.Sequential()
+        super().__init__()
+        self.model = nn.Sequential()
     
