@@ -7,5 +7,6 @@ class FMNIST(nn.Module):
     classes = ['T-shit/top', 'Trouser', 'Pullover', 'Dress',\
              'Coat', 'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot'
              ]
-    
+    def __init__(self):
+    self.model = nn.Sequential()
     
