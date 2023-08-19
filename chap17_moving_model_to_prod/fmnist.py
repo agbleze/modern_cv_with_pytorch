@@ -9,5 +9,7 @@ class FMNIST(nn.Module):
              ]
     def __init__(self):
         super().__init__()
-        self.model = nn.Sequential()
+        self.model = nn.Sequential(
+            nn.Conv2d(),
+        )
     
