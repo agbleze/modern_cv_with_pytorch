@@ -13,3 +13,6 @@ class FMNIST(nn.Module):
             nn.Conv2d(),
         )
     
+    
+    
+    
