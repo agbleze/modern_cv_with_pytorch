@@ -95,6 +95,39 @@ class UNet(nn.Module):
         self.up_conv10 = up_conv(64, 32)
         self.conv10 = conv(32 + 64, 32)
         self.conv11 = nn.Conv2d(32, out_channels, kernel_size=1)
+    def forward(self, x):
+        block1 = self.block1(x)
+        block2 = self.block2(block1)
+        block3 = self.block3(block2)
+        block4 = self.block4(block3)
+        block5 = self.block5(block4)
+        
+        bottleneck = self.bottleneck(block5)
+        x = self.conv_bottleneck(bottleneck)
+        
+        x = self.up_conv6(x)
+        x = torch.cat([x, block5], dim=1)
+        x = self.conv6(x)
+        
+        x = self.up_conv7(x)
+        x = torch.cat([x, block4], dim=1)
+        x = self.conv7(x)
+        
+        x = self.up_conv8(x)
+        x = torch.cat([x, block3], dim=1)
+        x = self.conv8(x)
+        
+        x = self.up_conv9(x)
+        x = torch.cat([x, block2], dim=1)
+        x = self.conv9(x)
+        
+        x = self.up_conv10(x)
+        x = torch.cat([x, block1], dim=1)
+        x = self.conv10(x)
+        
+        x = self.conv11(x)
+        
+        return x
 
 
 
