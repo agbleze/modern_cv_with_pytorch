@@ -23,7 +23,13 @@ tfms = transforms.Compose([transforms.ToTensor(),
 
 
 #%%
-
+class SegData(Dataset):
+    def __init__(self, split):
+        self.items = stem(f'dataset1/images_prepped_{split}')
+        self.split = split
+    def __len__(self):
+        return len(self.items)
+        
 
 
 
