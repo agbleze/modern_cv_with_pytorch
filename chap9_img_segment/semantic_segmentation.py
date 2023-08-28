@@ -128,9 +128,69 @@ class UNet(nn.Module):
         x = self.conv11(x)
         
         return x
+    
+    
+#%%
+ce = nn.CrossEntropyLoss()
+def UnetLoss(preds, targets):
+    ce_loss = ce(preds, targets)
+    acc = (torch.max(preds, 1)[1] == targets).float().mean()
+    return ce_loss, acc
+
+#%%
+def train_batch(model, data, optimizer, criterion):
+    model.train()
+    ims, ce_masks = data
+    _masks = model(ims)
+    optimizer.zero_grad()
+    loss, acc = criterion(_masks, ce_masks)
+    optimizer.step()
+    return loss.item(), acc.item()
+
+@torch.no_grad()
+def validate_batch(model, data, criterion):
+    model.eval()
+    ims, masks = data
+    _masks = model(ims)
+    loss, acc = criterion(_masks, masks)
+    return loss.item(), acc.item()
 
 
+#%%
+model = UNet().to(device)
+criterion = UnetLoss
+optimizer = optim.Adam(model.parameters(), lr=1e-3)
+n_epochs = 20
 
+#%%
+log = Report(n_epochs)
+for ex in range(n_epochs):
+    N = len(trn_dl)
+    for bx, data in enumerate(trn_dl):
+        loss, acc = train_batch(model, data, optimizer, criterion)
+        log.record(ex+(bx+1)/N, trn_loss=loss, trn_acc=acc, end='\r')  
+        
+    N = len(val_dl)
+    for bx, data in enumerate(val_dl):
+        loss, acc = validate_batch(model, data, criterion)
+        log.record(ex+(bx+1)/N, val_loss=loss, val_acc=acc, end='\r')
+    
+    log.report_avgs(ex+1)
+    
+    
+#%%
+log.plot_epochs(['trn_loss', 'val_loss'])
+
+#%%
+im, mask = next(iter(val_dl))
+_mask = model(im)
+_, _mask = torch.max(_mask, dim=1)
+subplots([im[0].permute(1,2,0).detach().cpu()[:,:,0], 
+          mask.permute(1,2,0).detach().cpu()[:,:,0],
+          _mask.permute(1,2,0).detach().cpu()[:,:,0]
+          ],
+         nc=3, titles=['Original image', 'Original mask', 'Predicted mask']
+         )
 
 
 
