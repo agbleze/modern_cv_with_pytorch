@@ -7,7 +7,7 @@ class FMNIST(nn.Module):
     classes = ['T-shit/top', 'Trouser', 'Pullover', 'Dress',\
              'Coat', 'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot'
              ]
-    def __init__(self, fpath = "fmnist.weight.pth"):
+    def __init__(self, fpath = "fmnist.weights.pth"):
         super().__init__()
         self.model = nn.Sequential(
                             nn.Linear(28*28, 1000),
@@ -25,6 +25,15 @@ class FMNIST(nn.Module):
         conf, clss = pred.max(-1)
         clss = self.classes[clss.cpu().item()]
         return conf.item(), clss
+    
+    def predict(self, path):
+        #print(path)
+        image = cv2.imread(path, 0)
+        x = np.array(image)
+        x = cv2.resize(x, (28,28))
+        x = torch.Tensor(255-x)/255.
+        conf, clss = self.forward(x)
+        return {'class': clss, 'confidence': f'{conf:.4f}'}
         
     
     
