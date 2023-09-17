@@ -36,5 +36,61 @@ class AutoEncoder(nn.Module):
             nn.Linear(128, 64),
             nn.ReLU(True),
             nn.Linear(in_features=64, out_features=latent_dim)
+            
         )
+        self.decoder = nn.Sequential(
+            nn.Linear(in_features=latent_dim, out_features=64),
+            nn.ReLU(True),
+            nn.Linear(in_features=64, out_features=128),
+            nn.ReLU(inplace=True),
+            nn.Linear(in_features=128, out_features=28*28),
+            nn.Tanh()
+        )
+        
+    def forward(self, x):
+        x = x.view(len(x), -1)
+        x = self.encoder(x)
+        x = self.decoder(x)
+        x = x.view(len(x), 1, 28, 28)
+        return x
+    
+    
+    
+#%% visualize model
+from torchsummary import summary
+model = AutoEncoder(3).to(device)
+summary(model, torch.zeros(2,1,28,28))
+
+
+def train(input, model, criterion, optimizer):
+    model.train()
+    optimizer.zero_grad()
+    output = model(input)
+    loss = criterion(output, input)
+    loss.backward()
+    optimizer.step()
+    return loss
+
+@torch.no_grad()
+def validate_batch(input, model, criterion):
+    model.eval()
+    output = model(input)
+    loss = criterion(output, input)
+    return loss
+
+model = AutoEncoder(latent_dim=3).to(device)
+criterion = nn.MSELoss()
+optimizer = torch.optim.AdamW(model.parameters(),
+                              lr=0.001, weight_decay=1e-5
+                              )
+ 
+ # train e model
+num_epochs = 5
+log = Report(num_epochs)
+
+for epoch in range(num_epochs):
+    N = len(trn_dl)
+    for ix, (data, _) in enumerate(trn_dl):
+        loss = train_batch(data, model)  
+    
 
