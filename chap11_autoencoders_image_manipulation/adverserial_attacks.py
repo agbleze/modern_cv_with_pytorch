@@ -59,6 +59,34 @@ def attack(image, model, target, epsilon=1e-6):
     input.requires_grad = True
     pred = model(input)
     loss = nn.CrossEntropyLoss()(pred, target)
+    loss.backward()
+    losses.append(loss.mean().item())
+    output = input - epsilon * input.grad.sign()
+    output = tensor2image(output)
+    del input
+    return output.detach()
+
+# modeify image to belog to different class
+modified_images = []
+desired_targets = ['lemon', 'comic book', 'sax, saxophone']
+
+# loop and specify target class in each iteration
+for target in desired_targets:
+    target = torch.tensor([image_net_classes[target]])
+    
+    #modify images to attack over increasing epoch
+    image_to_attack = original_image.clone()
+    for _ in trange(10):
+        image_to_attack = attack(image_to_attack, model, target)
+    modified_images.append(image_to_attack)
+    
+# modified image and corresponding classes
+for image in [original_image, *modified_images]:
+    predict_on_image(image)
+    inspect(image)
+    
+
+
     
     
         
